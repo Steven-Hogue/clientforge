@@ -1,0 +1,45 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "clientforge"
+version = "0.1.0"
+description = "A set of tools and building blocks to allow simple and easy creation of clients for RESTful APIs."
+readme = "README.md"
+license = "Apache-2.0"
+authors = [
+    {name = "Steven Hogue", email = "steven.d.hogue@gmail.com"},
+]
+
+requires-python = ">=3.11"
+dependencies = [
+    "dataclass-wizard>=0.35.0",
+    "hatchling>=1.27.0",
+    "pre-commit>=4.1.0",
+    "requests>=2.32.3",
+    "ruff>=0.9.4",
+]
+
+
+[tool.ruff]
+line-length = 88
+indent-width = 4
+
+target-version = "py311"
+
+[tool.ruff.lint]
+select = [
+    # pycodestyle
+    "E",
+    # Pyflakes
+    "F",
+    # pyupgrade
+    "UP",
+    # flake8-bugbear
+    "B",
+    # flake8-simplify
+    "SIM",
+    # isort
+    "I",
+]
