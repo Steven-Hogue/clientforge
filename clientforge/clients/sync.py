@@ -1,4 +1,4 @@
-"""Synchroneous clientforge base client."""
+"""Synchronous Forge API client."""
 
 import logging
 
@@ -24,14 +24,14 @@ class ForgeClient(BaseClient):
         """Initialize the client."""
         super().__init__(
             api_url,
-            auth,
             session=Client(),
+            auth=auth,
             headers=headers,
             **kwargs,
         )
 
     def _make_request(
-        self, method: str, endpoint: str, params: dict = None, **kwargs
+        self, method: str, endpoint: str, params: dict | None = None, **kwargs
     ) -> Response:
         """Make a request to the API."""
         url = self._api_url.format(endpoint=endpoint)
@@ -41,6 +41,6 @@ class ForgeClient(BaseClient):
         try:
             response.raise_for_status()
         except Exception as err:
-            logger.error(f"Request failed: {response.content}")
+            logger.error(f"Request failed: {response.content.decode('utf8')}")
             raise err
         return Response(response.status_code, response.content, response.url)

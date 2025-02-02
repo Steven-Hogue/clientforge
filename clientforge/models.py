@@ -1,34 +1,42 @@
-"""Models for the clientforge application."""
+"""Models for the clientforge package."""
 
 import json
 from typing import TypeVar
 
 from dataclass_wizard import JSONWizard
+from httpx import URL
 
 from clientforge.exceptions import InvalidJSONResponse
 
-MODEL = TypeVar("MODEL", bound="BaseModel")
+MODEL = TypeVar("MODEL", bound="ForgeModel")
 
 
-class BaseModel(JSONWizard):
+class ForgeModel(JSONWizard):
     """A base class for all models."""
-
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
 
 
 class Response:
     """A class to represent a response from the server."""
 
-    def __init__(self, status: int, content: bytes, url: str):
-        """Initialize the response."""
+    def __init__(self, status: int, content: bytes, url: URL) -> None:
+        """Initialize the response.
+
+        Parameters
+        ----------
+            status: int
+                The status code of the response.
+            content: bytes
+                The content of the response as bytes.
+            url: str
+                The URL of the response.
+        """
         self.status = status
         self.content = content
         self.url = url
 
-        self._json = None
+        self._json: dict | list | None = None
 
-    def json(self) -> dict | list:
+    def json(self) -> dict | list | None:
         """Return the JSON content of the response.
 
         Raises
@@ -44,7 +52,7 @@ class Response:
                 f"Invalid JSON response from {self.url}: {self.content.decode()}"
             ) from err
 
-    def to_model(self, model_class: MODEL, key: str = None) -> MODEL:
+    def to_model(self, model_class: MODEL, key: str | int | None = None) -> MODEL:
         """Convert the response to a model.
 
         Parameters
@@ -58,8 +66,12 @@ class Response:
                 The model object.
         """
         self_json = self.json()
-        if key:
+        if key and isinstance(self_json, dict):
             self_json = self_json[key]
+        elif key and isinstance(self_json, list):
+            key = int(key)
+            self_json = self_json[key]
+
         if isinstance(self_json, list):
             return model_class.from_list(self_json)
         else:

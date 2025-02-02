@@ -1,4 +1,4 @@
-"""Base class for API clients."""
+"""Base class for Forge API clients."""
 
 import logging
 from abc import ABC, abstractmethod
@@ -17,8 +17,8 @@ class BaseClient(ABC):
     def __init__(
         self,
         api_url: str,
-        auth: ForgeAuth,
         session: Client,
+        auth: ForgeAuth | None = None,
         headers: dict | None = None,
         **kwargs,
     ):
@@ -43,7 +43,7 @@ class BaseClient(ABC):
 
     @abstractmethod
     def _make_request(
-        self, method: str, endpoint: str, params: dict = None, **kwargs
+        self, method: str, endpoint: str, params: dict | None = None, **kwargs
     ) -> Response:
         """Make a request to the API.
 

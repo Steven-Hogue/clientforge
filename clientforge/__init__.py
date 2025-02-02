@@ -3,10 +3,10 @@
 __all__ = [
     "ClientCredentialsOAuth2Auth",
     "ForgeClient",
-    "BaseModel",
+    "ForgeModel",
     "Response",
 ]
 
 from clientforge.auth import ClientCredentialsOAuth2Auth
 from clientforge.clients.sync import ForgeClient
-from clientforge.models import BaseModel, Response
+from clientforge.models import ForgeModel, Response

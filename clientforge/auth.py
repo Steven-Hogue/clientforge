@@ -1,10 +1,10 @@
-"""Authentication modules for the clientforge package."""
+"""Authentication modules."""
 
 import logging
 import time
 from collections.abc import Generator
 
-from httpx import Auth, Client, Request
+from httpx import Auth, Client, Request, Response
 from oauthlib.oauth2 import BackendApplicationClient
 
 logger = logging.getLogger(__name__)
@@ -59,7 +59,7 @@ class ClientCredentialsOAuth2Auth(ForgeAuth):
 
         return self._token
 
-    def auth_flow(self, request: Request) -> Generator[Request, Request, None]:
+    def auth_flow(self, request: Request) -> Generator[Request, Response, None]:
         """Authenticate the request."""
         request.headers["Authorization"] = f"Bearer {self._get_token()}"
         yield request

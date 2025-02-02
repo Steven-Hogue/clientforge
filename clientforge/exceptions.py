@@ -1,4 +1,4 @@
-"""Contains the exceptions that are raised by the clientforge package."""
+"""Exceptions that are raised by the clientforge package."""
 
 
 class InvalidJSONResponse(Exception):
