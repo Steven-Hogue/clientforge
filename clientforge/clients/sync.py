@@ -7,6 +7,7 @@ from httpx import Client
 from clientforge.auth import ForgeAuth
 from clientforge.clients.base import BaseClient
 from clientforge.models import Response
+from clientforge.paginate import ForgePaginator
 
 logger = logging.getLogger(__name__)
 
@@ -18,6 +19,7 @@ class ForgeClient(BaseClient):
         self,
         api_url: str,
         auth: ForgeAuth | None = None,
+        paginator: ForgePaginator | None = None,
         headers: dict | None = None,
         **kwargs,
     ):
@@ -26,11 +28,12 @@ class ForgeClient(BaseClient):
             api_url,
             session=Client(),
             auth=auth,
+            paginator=paginator,
             headers=headers,
             **kwargs,
         )
 
-    def _make_request(
+    def __call__(
         self, method: str, endpoint: str, params: dict | None = None, **kwargs
     ) -> Response:
         """Make a request to the API."""

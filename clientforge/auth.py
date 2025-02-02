@@ -30,13 +30,13 @@ class ClientCredentialsOAuth2Auth(ForgeAuth):
         self._token_url = token_url
         self._client_id = client_id
         self._client_secret = client_secret
-        self.scopes = scopes or []
+        self.scopes = scopes or kwargs["scope"] or []
 
         self._client = BackendApplicationClient(client_id=client_id)
 
         self._session = session or Client()
 
-        self.kwargs = kwargs
+        self._kwargs = kwargs
 
         self._token = None
         self._token_acquired = None
@@ -45,7 +45,7 @@ class ClientCredentialsOAuth2Auth(ForgeAuth):
     def _get_token(self):
         """Get the token."""
         if self._token is None or time.time() > self._token_expires:
-            body = self._client.prepare_request_body(scope=self.scopes, **self.kwargs)
+            body = self._client.prepare_request_body(scope=self.scopes, **self._kwargs)
             response = self._session.post(
                 self._token_url,
                 data=body,

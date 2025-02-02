@@ -16,6 +16,7 @@ requires-python = ">=3.11"
 dependencies = [
     "dataclass-wizard==0.34.0",
     "httpx>=0.28.1",
+    "jsonpath-ng>=1.7.0",
     "oauthlib>=3.2.2",
     "pre-commit>=4.1.0",
     "types-oauthlib>=3.2.0.20240806",
@@ -67,5 +68,8 @@ major_version_zero = true
 python_version = "3.11"
 
 [[tool.mypy.overrides]]
-module = "dataclass_wizard"
+module = [
+    "dataclass_wizard",
+    "jsonpath_ng",
+]
 ignore_missing_imports = true
