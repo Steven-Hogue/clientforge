@@ -12,3 +12,6 @@ wheels/
 # Testing
 .coverage
 htmlcov
+
+# Config
+.vscode/
