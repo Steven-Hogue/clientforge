@@ -8,7 +8,7 @@ from httpx import URL
 
 from clientforge.exceptions import InvalidJSONResponse
 
-MODEL = TypeVar("MODEL", bound="ForgeModel")
+MODEL = TypeVar("MODEL", bound="type[ForgeModel]")
 
 
 class ForgeModel(JSONWizard):
@@ -66,9 +66,9 @@ class Response:
                 The model object.
         """
         self_json = self.json()
-        if key and isinstance(self_json, dict):
+        if key is not None and isinstance(self_json, dict):
             self_json = self_json[key]
-        elif key and isinstance(self_json, list):
+        elif key is not None and isinstance(self_json, list):
             key = int(key)
             self_json = self_json[key]
 
@@ -84,23 +84,3 @@ class Response:
     def __getitem__(self, key):
         """Get a value from the JSON content."""
         return self.json()[key]
-
-
-class AsyncResponse(Response):
-    """A class to represent an asynchronous response from the server."""
-
-    def __init__(self, status: int, content: bytes, url: URL) -> None:
-        """Initialize the response.
-
-        Parameters
-        ----------
-            status: int
-                The status code of the response.
-            content: bytes
-                The content of the response as bytes.
-            url: str
-                The URL of the response.
-        """
-        super().__init__(status, content, url)
-
-        self._json: dict | list | None = None

@@ -1,12 +1,16 @@
 """Pagination modules."""
 
 from abc import ABC, abstractmethod
-from collections.abc import AsyncGenerator, Generator
+from collections.abc import Coroutine, Generator
+from typing import TypeVar
 
-from jsonpath_ng import parse
+from jsonpath_ng import JSONPath, parse
 
 from clientforge.clients.base import BaseClient
+from clientforge.exceptions import AsyncNotSupported, JSONPathNotFoundError
 from clientforge.models import Response
+
+BaseClientSubclass = TypeVar("BaseClientSubclass", bound=BaseClient)
 
 
 class ForgePaginator(ABC):
@@ -34,14 +38,14 @@ class ForgePaginator(ABC):
         """
         self._page_size = page_size
         self._page_size_param = page_size_param
-        self._path_to_data = parse(path_to_data)
+        self._path_to_data: JSONPath = parse(path_to_data)
 
         self._kwargs = kwargs
 
     @abstractmethod
     def _sync_gen(
         self,
-        client: BaseClient,
+        client: BaseClientSubclass,
         method: str,
         endpoint: str,
         params: dict | None = None,
@@ -51,7 +55,7 @@ class ForgePaginator(ABC):
 
         Parameters
         ----------
-            client: BaseClient
+            client: BaseClientSubclass
                 The API client.
             method: str
                 The HTTP method to use.
@@ -69,19 +73,19 @@ class ForgePaginator(ABC):
         """
 
     @abstractmethod
-    async def _async_gen(
+    def _async_gen(
         self,
-        client: BaseClient,
+        client: BaseClientSubclass,
         method: str,
         endpoint: str,
         params: dict | None = None,
         **kwargs,
-    ) -> AsyncGenerator[Response, None]:
+    ) -> Generator[Coroutine[None, None, Response], None, None]:
         """Paginate through the results of a request.
 
         Parameters
         ----------
-            client: BaseClient
+            client: BaseClientSubclass
                 The API client.
             method: str
                 The HTTP method to use.
@@ -133,11 +137,11 @@ class OffsetPaginator(ForgePaginator):
         )
 
         self._page_offset_param = page_offset_param
-        self._path_to_total = parse(path_to_total)
+        self._path_to_total: JSONPath = parse(path_to_total)
 
     def _sync_gen(
         self,
-        client: BaseClient,
+        client: BaseClientSubclass,
         method: str,
         endpoint: str,
         params: dict | None = None,
@@ -149,34 +153,41 @@ class OffsetPaginator(ForgePaginator):
         response = client(method, endpoint, params=params, **kwargs)
         yield response
 
-        total_results = len(self._path_to_data.find(response.json()))
-        total = self._path_to_total.find(response.json())[0].value
+        if not response.json():
+            return
+
+        # Extract the data from the response
+        response_data = self._path_to_data.find(response.json())
+        if len(response_data) == 0:
+            raise JSONPathNotFoundError("Data path not found in response.")
+        data = response_data[0].value
+
+        # Extract the total number of results from the response
+        response_total = self._path_to_total.find(response.json())
+        if len(response_total) == 0:
+            raise JSONPathNotFoundError("Total path not found in response.")
+        total = response_total[0].value
+
+        # Paginate through the results
+        total_results = len(data)
         while total_results < total:
             params[self._page_offset_param] = total_results
             response = client(method, endpoint, params=params, **kwargs)
 
             yield response
-            total_results += len(self._path_to_data.find(response.json()))
 
-    async def _async_gen(
+            response_data = self._path_to_data.find(response.json())
+            if len(response_data) == 0:
+                raise JSONPathNotFoundError("Data path not found in response.")
+            data = response_data[0].value
+            total_results += len(data)
+
+    def _async_gen(
         self,
-        client: BaseClient,
+        client: BaseClientSubclass,
         method: str,
         endpoint: str,
         params: dict | None = None,
         **kwargs,
     ):
-        params = params or {}
-        params[self._page_size_param] = self._page_size
-
-        response = await client(method, endpoint, params=params, **kwargs)
-        yield response
-
-        total_results = len(self._path_to_data.find(response.json()))
-        total = self._path_to_total.find(response.json())[0].value
-        while total_results < total:
-            params[self._page_offset_param] = total_results
-            response = await client(method, endpoint, params=params, **kwargs)
-
-            yield response
-            total_results += len(self._path_to_data.find(response.json()))
+        raise AsyncNotSupported("OffsetPaginator does not support async pagination.")

@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import logging
 from abc import ABC, abstractmethod
+from collections.abc import Coroutine, Generator
 from typing import TYPE_CHECKING, Generic, TypeVar, get_args, get_origin
 
 from httpx._client import BaseClient as HTTPXClient
@@ -84,6 +85,11 @@ class BaseClient(ABC, Generic[HTTPXClientSubclass]):
         session.headers.update(self._headers)
         return session
 
+    @property
+    def url(self) -> str:
+        """The base URL of the API."""
+        return self._api_url.format(endpoint="")
+
     @abstractmethod
     def _generate_pages(
         self,
@@ -91,7 +97,10 @@ class BaseClient(ABC, Generic[HTTPXClientSubclass]):
         endpoint: str,
         params: dict | None = None,
         **kwargs,
-    ) -> Response:
+    ) -> (
+        Generator[Response, None, None]
+        | Generator[Coroutine[None, None, Response], None, None]
+    ):
         """Generate pages of results from the API.
 
         Parameters
@@ -109,6 +118,24 @@ class BaseClient(ABC, Generic[HTTPXClientSubclass]):
         ------
             Response
                 The response object.
+        """
+
+    @abstractmethod
+    def _make_request(
+        self, method: str, endpoint: str, params: dict | None = None, **kwargs
+    ) -> Response | Coroutine[None, None, Response]:
+        """Make a request to the API.
+
+        Parameters
+        ----------
+            method: str
+                The HTTP method to use.
+            endpoint: str
+                The endpoint to make the request to.
+            params: dict
+                The parameters to include in the request.
+            **kwargs
+                Additional keyword arguments to pass to the request.
         """
 
     def __call__(
@@ -130,24 +157,6 @@ class BaseClient(ABC, Generic[HTTPXClientSubclass]):
         if self._session.is_closed:
             self._session = self._new_session()
         return self._make_request(method, endpoint, params=params, **kwargs)
-
-    @abstractmethod
-    def _make_request(
-        self, method: str, endpoint: str, params: dict | None = None, **kwargs
-    ):
-        """Make a request to the API.
-
-        Parameters
-        ----------
-            method: str
-                The HTTP method to use.
-            endpoint: str
-                The endpoint to make the request to.
-            params: dict
-                The parameters to include in the request.
-            **kwargs
-                Additional keyword arguments to pass to the request.
-        """
 
     def __enter__(self):
         """Enter the context manager."""

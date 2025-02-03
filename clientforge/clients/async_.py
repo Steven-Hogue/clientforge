@@ -6,6 +6,7 @@ from httpx import AsyncClient
 
 from clientforge.auth import ForgeAuth
 from clientforge.clients.base import BaseClient
+from clientforge.exceptions import HTTPStatusError
 from clientforge.models import Response
 from clientforge.paginate import ForgePaginator
 
@@ -48,6 +49,8 @@ class AsyncForgeClient(BaseClient[AsyncClient]):
         try:
             response.raise_for_status()
         except Exception as err:
-            logger.error(f"Request failed: {response.content.decode('utf8')}")
-            raise err
+            raise HTTPStatusError(
+                f"Request failed: {response.content.decode('utf8')}"
+            ) from err
+
         return Response(response.status_code, response.content, response.url)
