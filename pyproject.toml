@@ -16,7 +16,6 @@ requires-python = ">=3.11"
 dependencies = [
     "dataclass-wizard==0.34.0",
     "httpx>=0.28.1",
-    "hypothesis>=6.124.9",
     "jsonpath-ng>=1.7.0",
     "oauthlib>=3.2.2",
     "pre-commit>=4.1.0",

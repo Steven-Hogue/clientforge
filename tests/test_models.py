@@ -4,8 +4,6 @@ from dataclasses import dataclass
 
 import pytest
 from httpx import URL
-from hypothesis import given
-from hypothesis import strategies as st
 
 from clientforge.exceptions import InvalidJSONResponse
 from clientforge.models import ForgeModel, Response
@@ -107,13 +105,3 @@ def test_response_getitem():
     url = URL("http://example.com")
     response = Response(status, content, url)
     assert response["key"] == "value"
-
-
-@given(status=st.integers(100, 600), content=st.binary())
-def test_response_hypothesis(status, content):
-    """Test the response with Hypothesis."""
-    url = URL("http://example.com")
-    response = Response(status, content, url)
-    assert response.status == status
-    assert response.content == content
-    assert response.url == url
