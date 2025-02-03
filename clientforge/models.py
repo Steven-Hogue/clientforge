@@ -84,3 +84,23 @@ class Response:
     def __getitem__(self, key):
         """Get a value from the JSON content."""
         return self.json()[key]
+
+
+class AsyncResponse(Response):
+    """A class to represent an asynchronous response from the server."""
+
+    def __init__(self, status: int, content: bytes, url: URL) -> None:
+        """Initialize the response.
+
+        Parameters
+        ----------
+            status: int
+                The status code of the response.
+            content: bytes
+                The content of the response as bytes.
+            url: str
+                The URL of the response.
+        """
+        super().__init__(status, content, url)
+
+        self._json: dict | list | None = None

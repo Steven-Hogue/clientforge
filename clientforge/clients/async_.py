@@ -2,7 +2,7 @@
 
 import logging
 
-from httpx import Client
+from httpx import AsyncClient
 
 from clientforge.auth import ForgeAuth
 from clientforge.clients.base import BaseClient
@@ -12,8 +12,8 @@ from clientforge.paginate import ForgePaginator
 logger = logging.getLogger(__name__)
 
 
-class ForgeClient(BaseClient[Client]):
-    """Base class for synchronous API clients."""
+class AsyncForgeClient(BaseClient[AsyncClient]):
+    """Base class for asynchronous API clients."""
 
     def __init__(
         self,
@@ -34,17 +34,17 @@ class ForgeClient(BaseClient[Client]):
     def _generate_pages(self, method, endpoint, params=None, **kwargs):
         if self._paginator is None:
             raise ValueError("Paginator is not set.")
-        return self._paginator._sync_gen(
+        return self._paginator._async_gen(
             self, method, endpoint, params=params, **kwargs
         )
 
-    def _make_request(
+    async def _make_request(
         self, method: str, endpoint: str, params: dict | None = None, **kwargs
     ) -> Response:
         url = self._api_url.format(endpoint=endpoint)
         request = self._session.build_request(method, url, params=params, **kwargs)
         logger.debug(f"Making request: {request.method} {request.url}")
-        response = self._session.send(request)
+        response = await self._session.send(request)
         try:
             response.raise_for_status()
         except Exception as err:

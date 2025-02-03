@@ -1,7 +1,7 @@
 """Pagination modules."""
 
 from abc import ABC, abstractmethod
-from collections.abc import Generator
+from collections.abc import AsyncGenerator, Generator
 
 from jsonpath_ng import parse
 
@@ -39,7 +39,7 @@ class ForgePaginator(ABC):
         self._kwargs = kwargs
 
     @abstractmethod
-    def __call__(
+    def _sync_gen(
         self,
         client: BaseClient,
         method: str,
@@ -47,6 +47,36 @@ class ForgePaginator(ABC):
         params: dict | None = None,
         **kwargs,
     ) -> Generator[Response, None, None]:
+        """Paginate through the results of a request.
+
+        Parameters
+        ----------
+            client: BaseClient
+                The API client.
+            method: str
+                The HTTP method to use.
+            endpoint: str
+                The API endpoint to request.
+            params: dict, optional
+                The query parameters to send with the request.
+            **kwargs
+                Additional keyword arguments.
+
+        Yields
+        ------
+            Response
+                The response from the API.
+        """
+
+    @abstractmethod
+    async def _async_gen(
+        self,
+        client: BaseClient,
+        method: str,
+        endpoint: str,
+        params: dict | None = None,
+        **kwargs,
+    ) -> AsyncGenerator[Response, None]:
         """Paginate through the results of a request.
 
         Parameters
@@ -98,12 +128,14 @@ class OffsetPaginator(ForgePaginator):
             **kwargs
                 Additional keyword arguments.
         """
-        super().__init__(page_size, page_size_param, path_to_data, **kwargs)
+        super().__init__(
+            page_size, page_size_param, path_to_data, supports_async=True, **kwargs
+        )
 
         self._page_offset_param = page_offset_param
         self._path_to_total = parse(path_to_total)
 
-    def __call__(
+    def _sync_gen(
         self,
         client: BaseClient,
         method: str,
@@ -111,26 +143,6 @@ class OffsetPaginator(ForgePaginator):
         params: dict | None = None,
         **kwargs,
     ) -> Generator[Response, None, None]:
-        """Paginate through the results of a request.
-
-        Parameters
-        ----------
-            client: BaseClient
-                The API client.
-            method: str
-                The HTTP method to use.
-            endpoint: str
-                The API endpoint to request.
-            params: dict, optional
-                The query parameters to send with the request.
-            **kwargs
-                Additional keyword arguments.
-
-        Yields
-        ------
-            Response
-                The response from the API.
-        """
         params = params or {}
         params[self._page_size_param] = self._page_size
 
@@ -142,6 +154,29 @@ class OffsetPaginator(ForgePaginator):
         while total_results < total:
             params[self._page_offset_param] = total_results
             response = client(method, endpoint, params=params, **kwargs)
+
+            yield response
+            total_results += len(self._path_to_data.find(response.json()))
+
+    async def _async_gen(
+        self,
+        client: BaseClient,
+        method: str,
+        endpoint: str,
+        params: dict | None = None,
+        **kwargs,
+    ):
+        params = params or {}
+        params[self._page_size_param] = self._page_size
+
+        response = await client(method, endpoint, params=params, **kwargs)
+        yield response
+
+        total_results = len(self._path_to_data.find(response.json()))
+        total = self._path_to_total.find(response.json())[0].value
+        while total_results < total:
+            params[self._page_offset_param] = total_results
+            response = await client(method, endpoint, params=params, **kwargs)
 
             yield response
             total_results += len(self._path_to_data.find(response.json()))
