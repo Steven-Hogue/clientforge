@@ -4,11 +4,11 @@ import logging
 
 from httpx import Client
 
-from clientforge.auth import ForgeAuth
+from clientforge.auth import BaseAuth
 from clientforge.clients.base import BaseClient
 from clientforge.exceptions import HTTPStatusError
 from clientforge.models import Response
-from clientforge.paginate import ForgePaginator
+from clientforge.paginate.base import BasePaginator
 
 logger = logging.getLogger(__name__)
 
@@ -19,8 +19,8 @@ class ForgeClient(BaseClient[Client]):
     def __init__(
         self,
         api_url: str,
-        auth: ForgeAuth | None = None,
-        paginator: ForgePaginator | None = None,
+        auth: BaseAuth | None = None,
+        paginator: BasePaginator | None = None,
         headers: dict | None = None,
         **kwargs,
     ):

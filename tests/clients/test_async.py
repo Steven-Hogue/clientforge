@@ -5,10 +5,10 @@ from pytest_httpx import HTTPXMock
 
 from clientforge.clients import AsyncForgeClient
 from clientforge.exceptions import HTTPStatusError
-from clientforge.paginate import ForgePaginator
+from clientforge.paginate.base import BasePaginator
 
 
-class DummyPaginator(ForgePaginator):
+class DummyPaginator(BasePaginator):
     """Dummy paginator."""
 
     def _sync_gen(self, client, method, endpoint, params=None, **kwargs):
@@ -37,7 +37,7 @@ async def test_generate_pages_no_paginator(client: AsyncForgeClient):
 async def test_generate_pages_dummy_paginator(client: AsyncForgeClient):
     """Test the generate pages method."""
     client._paginator = DummyPaginator()
-    pages = client._generate_pages("GET", "/endpoint")
+    pages = await client._generate_pages("GET", "/endpoint")
     assert [page async for page in pages] == ["response0", "response1", "response2"]
 
 

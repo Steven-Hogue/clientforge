@@ -10,11 +10,11 @@ from oauthlib.oauth2 import BackendApplicationClient
 logger = logging.getLogger(__name__)
 
 
-class ForgeAuth(Auth):
+class BaseAuth(Auth):
     """Authentication class."""
 
 
-class ClientCredentialsOAuth2Auth(ForgeAuth):
+class ClientCredentialsOAuth2Auth(BaseAuth):
     """OAuth2 authentication class."""
 
     def __init__(

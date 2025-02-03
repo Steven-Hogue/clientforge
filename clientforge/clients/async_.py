@@ -4,11 +4,11 @@ import logging
 
 from httpx import AsyncClient
 
-from clientforge.auth import ForgeAuth
+from clientforge.auth import BaseAuth
 from clientforge.clients.base import BaseClient
 from clientforge.exceptions import HTTPStatusError
 from clientforge.models import Response
-from clientforge.paginate import ForgePaginator
+from clientforge.paginate.base import BasePaginator
 
 logger = logging.getLogger(__name__)
 
@@ -19,8 +19,8 @@ class AsyncForgeClient(BaseClient[AsyncClient]):
     def __init__(
         self,
         api_url: str,
-        auth: ForgeAuth | None = None,
-        paginator: ForgePaginator | None = None,
+        auth: BaseAuth | None = None,
+        paginator: BasePaginator | None = None,
         headers: dict | None = None,
         **kwargs,
     ):
@@ -32,7 +32,7 @@ class AsyncForgeClient(BaseClient[AsyncClient]):
             **kwargs,
         )
 
-    def _generate_pages(self, method, endpoint, params=None, **kwargs):
+    async def _generate_pages(self, method, endpoint, params=None, **kwargs):
         if self._paginator is None:
             raise ValueError("Paginator is not set.")
         return self._paginator._async_gen(

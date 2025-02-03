@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import logging
 from abc import ABC, abstractmethod
-from collections.abc import Coroutine, Generator
+from collections.abc import AsyncGenerator, Coroutine, Generator
 from typing import TYPE_CHECKING, Generic, TypeVar, get_args, get_origin
 
 from httpx._client import BaseClient as HTTPXClient
@@ -12,8 +12,8 @@ from httpx._client import BaseClient as HTTPXClient
 from clientforge.models import Response
 
 if TYPE_CHECKING:
-    from clientforge.auth import ForgeAuth
-    from clientforge.paginate import ForgePaginator
+    from clientforge.auth import BaseAuth
+    from clientforge.paginate.base import BasePaginator
 
 logger = logging.getLogger(__name__)
 
@@ -27,8 +27,8 @@ class BaseClient(ABC, Generic[HTTPXClientSubclass]):
     def __init__(
         self,
         api_url: str,
-        auth: ForgeAuth | None = None,
-        paginator: ForgePaginator | None = None,
+        auth: BaseAuth | None = None,
+        paginator: BasePaginator | None = None,
         headers: dict | None = None,
         session_kwargs: dict | None = None,
         **kwargs,
@@ -99,7 +99,7 @@ class BaseClient(ABC, Generic[HTTPXClientSubclass]):
         **kwargs,
     ) -> (
         Generator[Response, None, None]
-        | Generator[Coroutine[None, None, Response], None, None]
+        | Coroutine[None, None, AsyncGenerator[Response, None]]
     ):
         """Generate pages of results from the API.
 

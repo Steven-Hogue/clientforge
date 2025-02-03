@@ -5,10 +5,10 @@ from pytest_httpx import HTTPXMock
 
 from clientforge.clients import ForgeClient
 from clientforge.exceptions import HTTPStatusError
-from clientforge.paginate import ForgePaginator
+from clientforge.paginate.base import BasePaginator
 
 
-class DummyPaginator(ForgePaginator):
+class DummyPaginator(BasePaginator):
     """Dummy paginator."""
 
     def _sync_gen(self, client, method, endpoint, params=None, **kwargs):
