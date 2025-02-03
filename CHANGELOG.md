@@ -1,3 +1,9 @@
+## v0.4.0 (2025-02-03)
+
+### Feat
+
+- **pagination**: async finalized
+
 ## v0.3.0 (2025-02-02)
 
 ### Feat
