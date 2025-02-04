@@ -8,6 +8,7 @@ from collections.abc import AsyncGenerator, Coroutine, Generator
 from typing import TYPE_CHECKING, Generic, TypeVar, get_args, get_origin
 
 from httpx._client import BaseClient as HTTPXClient
+from httpx._models import Request as HTTPXRequest
 
 from clientforge.models import Response
 
@@ -120,6 +121,30 @@ class BaseClient(ABC, Generic[HTTPXClientSubclass]):
                 The response object.
         """
 
+    def _build_request(
+        self, method: str, endpoint: str, params: dict | None = None, **kwargs
+    ) -> HTTPXRequest:
+        """Prepare a request to the API.
+
+        Parameters
+        ----------
+            method: str
+                The HTTP method to use.
+            endpoint: str
+                The API endpoint to request.
+            params: dict, optional
+                The query parameters to send with the request.
+            **kwargs
+                Additional keyword arguments.
+
+        Returns
+        -------
+            Request
+                The request object.
+        """
+        url = self._api_url.format(endpoint=endpoint)
+        return self._session.build_request(method, url, params=params, **kwargs)
+
     @abstractmethod
     def _make_request(
         self, method: str, endpoint: str, params: dict | None = None, **kwargs
@@ -131,11 +156,16 @@ class BaseClient(ABC, Generic[HTTPXClientSubclass]):
             method: str
                 The HTTP method to use.
             endpoint: str
-                The endpoint to make the request to.
-            params: dict
-                The parameters to include in the request.
+                The API endpoint to request.
+            params: dict, optional
+                The query parameters to send with the request.
             **kwargs
-                Additional keyword arguments to pass to the request.
+                Additional keyword arguments.
+
+        Returns
+        -------
+            Response
+                The response object.
         """
 
     def __call__(
