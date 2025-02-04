@@ -13,7 +13,7 @@ from httpx._models import Request as HTTPXRequest
 from clientforge.models import Response
 
 if TYPE_CHECKING:
-    from clientforge.auth import BaseAuth
+    from clientforge.auth.base import BaseAuth
     from clientforge.paginate.base import BasePaginator
 
 logger = logging.getLogger(__name__)

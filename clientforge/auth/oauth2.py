@@ -4,16 +4,13 @@ import logging
 import time
 from collections.abc import Generator
 
-from httpx import Auth, Client, Request, Response
+from httpx import Client, Request, Response
 from oauthlib.oauth2 import BackendApplicationClient
 
+from clientforge.auth.base import BaseAuth
 from clientforge.exceptions import OAuth2Error
 
 logger = logging.getLogger(__name__)
-
-
-class BaseAuth(Auth):
-    """Authentication class."""
 
 
 class ClientCredentialsOAuth2Auth(BaseAuth):
@@ -93,6 +90,12 @@ class ClientCredentialsOAuth2Auth(BaseAuth):
         return self._token  # type: ignore # the token cannot be None
 
     def auth_flow(self, request: Request) -> Generator[Request, Response, None]:
-        """Authenticate the request."""
+        """Authenticate the request.
+
+        Parameters
+        ----------
+            request: httpx.Request
+                The request to authenticate.
+        """
         request.headers["Authorization"] = f"{self._token_type} {self._get_token()}"
         yield request

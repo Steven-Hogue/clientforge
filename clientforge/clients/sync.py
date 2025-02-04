@@ -4,7 +4,7 @@ import logging
 
 from httpx import Client
 
-from clientforge.auth import BaseAuth
+from clientforge.auth.base import BaseAuth
 from clientforge.clients.base import BaseClient
 from clientforge.exceptions import HTTPStatusError
 from clientforge.models import Response
