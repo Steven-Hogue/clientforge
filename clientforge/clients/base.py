@@ -5,6 +5,8 @@ that all clients should implement. This class itself should not be used directly
 but should be subclassed to implement the specific API client.
 """
 
+from __future__ import annotations
+
 import logging
 from abc import ABC, abstractmethod
 from collections.abc import AsyncGenerator, Coroutine, Generator

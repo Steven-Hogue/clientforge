@@ -1,5 +1,7 @@
 """Offset paginator for paginating through results with an offset parameter."""
 
+from __future__ import annotations
+
 from collections.abc import AsyncGenerator, Generator
 from typing import TYPE_CHECKING
 
