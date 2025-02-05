@@ -19,8 +19,11 @@ MODEL = TypeVar("MODEL", bound="type[ForgeModel]")
 
 
 @dataclass
-class ForgeModel(JSONWizard):
+class ForgeModel(JSONWizard, key_case="CAMEL"):  # type: ignore # MyPy doesn't know about V1
     """A base class for all models."""
+
+    class _(JSONWizard.Meta):
+        v1 = True
 
 
 class Response:

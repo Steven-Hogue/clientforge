@@ -73,7 +73,7 @@ python_version = "3.11"
 
 [[tool.mypy.overrides]]
 module = [
-    "dataclass_wizard",
+    "dataclass_wizard.*",
     "jsonpath_ng.*",
 ]
 ignore_missing_imports = true
