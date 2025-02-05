@@ -2,7 +2,7 @@
 
 import logging
 
-from httpx import Client
+import httpx
 
 from clientforge.auth.base import BaseAuth
 from clientforge.clients.base import BaseClient
@@ -13,7 +13,7 @@ from clientforge.paginate.base import BasePaginator
 logger = logging.getLogger(__name__)
 
 
-class ForgeClient(BaseClient[Client]):
+class ForgeClient(BaseClient[httpx.Client]):
     """Base class for synchronous API clients."""
 
     def __init__(

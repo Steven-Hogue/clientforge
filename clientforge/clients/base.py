@@ -12,8 +12,7 @@ from abc import ABC, abstractmethod
 from collections.abc import AsyncGenerator, Coroutine, Generator
 from typing import TYPE_CHECKING, Generic, TypeVar, get_args, get_origin
 
-from httpx._client import BaseClient as HTTPXClient
-from httpx._models import Request as HTTPXRequest
+import httpx
 
 if TYPE_CHECKING:
     from clientforge.auth.base import BaseAuth
@@ -22,7 +21,7 @@ if TYPE_CHECKING:
 
 logger = logging.getLogger(__name__)
 
-HTTPXClientSubclass = TypeVar("HTTPXClientSubclass", bound=HTTPXClient)
+HTTPXClientSubclass = TypeVar("HTTPXClientSubclass", bound=httpx._client.BaseClient)
 
 
 class BaseClient(ABC, Generic[HTTPXClientSubclass]):
@@ -126,7 +125,7 @@ class BaseClient(ABC, Generic[HTTPXClientSubclass]):
 
     def _build_request(
         self, method: str, endpoint: str, params: dict | None = None, **kwargs
-    ) -> HTTPXRequest:
+    ) -> httpx.Request:
         """Prepare a request to the API.
 
         Parameters

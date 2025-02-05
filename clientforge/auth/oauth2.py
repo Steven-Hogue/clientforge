@@ -4,7 +4,7 @@ import logging
 import time
 from collections.abc import Generator
 
-from httpx import Client, Request, Response
+import httpx
 from oauthlib.oauth2 import BackendApplicationClient
 
 from clientforge.auth.base import BaseAuth
@@ -22,7 +22,7 @@ class ClientCredentialsOAuth2Auth(BaseAuth):
         client_id: str,
         client_secret: str,
         scopes: list[str] | None = None,
-        session: Client | None = None,
+        session: httpx.Client | None = None,
         **kwargs,
     ):
         """Initialize the OAuth2 authentication class.
@@ -49,7 +49,7 @@ class ClientCredentialsOAuth2Auth(BaseAuth):
 
         self._client = BackendApplicationClient(client_id=client_id)
 
-        self._session = session or Client()
+        self._session = session or httpx.Client()
 
         self._kwargs = kwargs
 
@@ -89,7 +89,9 @@ class ClientCredentialsOAuth2Auth(BaseAuth):
 
         return self._token  # type: ignore # the token cannot be None
 
-    def auth_flow(self, request: Request) -> Generator[Request, Response, None]:
+    def auth_flow(
+        self, request: httpx.Request
+    ) -> Generator[httpx.Request, httpx.Response, None]:
         """Authenticate the request.
 
         Parameters

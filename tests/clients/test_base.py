@@ -1,14 +1,14 @@
 """Tests for the base client."""
 
+import httpx
 import pytest
-from httpx import AsyncClient, Client
 
 from clientforge.clients.base import BaseClient
 
 # General
 
 
-class ConcClient(BaseClient[Client]):
+class ConcClient(BaseClient[httpx.Client]):
     """Concrete client."""
 
     def _generate_pages(self, method, endpoint, params=None, **kwargs):
@@ -50,7 +50,7 @@ def assert_client(client: ConcClient):
     assert client._api_url == "http://example.com/{endpoint}"
     assert client._generate_pages("GET", "/endpoint") is None
     assert client._make_request("GET", "/endpoint") is None
-    assert isinstance(client._session, Client)
+    assert isinstance(client._session, httpx.Client)
 
 
 def test_client(client: ConcClient):
@@ -87,7 +87,7 @@ def test_call(client: ConcClient):
 # Async
 
 
-class AsyncConcClient(BaseClient[AsyncClient]):
+class AsyncConcClient(BaseClient[httpx.AsyncClient]):
     """Concrete async client."""
 
     def _generate_pages(self, method, endpoint, params=None, **kwargs):
@@ -109,7 +109,7 @@ async def async_assert_client(client: AsyncConcClient):
     assert client._api_url == "http://example.com/{endpoint}"
     assert client._generate_pages("GET", "/endpoint") is None
     assert await client._make_request("GET", "/endpoint") is None
-    assert isinstance(client._session, AsyncClient)
+    assert isinstance(client._session, httpx.AsyncClient)
 
 
 @pytest.mark.asyncio

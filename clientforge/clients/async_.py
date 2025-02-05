@@ -2,7 +2,7 @@
 
 import logging
 
-from httpx import AsyncClient
+import httpx
 
 from clientforge.auth.base import BaseAuth
 from clientforge.clients.base import BaseClient
@@ -13,7 +13,7 @@ from clientforge.paginate.base import BasePaginator
 logger = logging.getLogger(__name__)
 
 
-class AsyncForgeClient(BaseClient[AsyncClient]):
+class AsyncForgeClient(BaseClient[httpx.AsyncClient]):
     """Base class for asynchronous API clients."""
 
     def __init__(

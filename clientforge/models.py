@@ -10,8 +10,8 @@ import json
 from dataclasses import dataclass
 from typing import TypeVar
 
+import httpx
 from dataclass_wizard import JSONWizard
-from httpx import URL
 
 from clientforge.exceptions import InvalidJSONResponse
 
@@ -29,7 +29,7 @@ class ForgeModel(JSONWizard, key_case="CAMEL"):  # type: ignore # MyPy doesn't k
 class Response:
     """A class to represent a response from the server."""
 
-    def __init__(self, status: int, content: bytes, url: URL) -> None:
+    def __init__(self, status: int, content: bytes, url: httpx.URL) -> None:
         """Initialize the response.
 
         Parameters

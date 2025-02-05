@@ -5,8 +5,8 @@ the API. This class should be subclassed to implement the specific authenticatio
 method.
 """
 
-from httpx import Auth
+import httpx
 
 
-class BaseAuth(Auth):
+class BaseAuth(httpx.Auth):
     """Authentication class."""
