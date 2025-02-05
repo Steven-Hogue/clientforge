@@ -5,8 +5,6 @@ where each is responsible for paginating through the results of a request in a
 specific manner.
 """
 
-from __future__ import annotations
-
 from abc import ABC, abstractmethod
 from collections.abc import AsyncGenerator, Generator
 from typing import TYPE_CHECKING
