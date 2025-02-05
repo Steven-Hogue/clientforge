@@ -41,7 +41,7 @@ class AsyncForgeClient(BaseClient[AsyncClient]):
 
     async def _make_request(
         self, method: str, endpoint: str, params: dict | None = None, **kwargs
-    ) -> Response:
+    ):
         request = self._build_request(method, endpoint, params=params, **kwargs)
         logger.debug(f"Making request: {request.method} {request.url}")
         response = await self._session.send(request)

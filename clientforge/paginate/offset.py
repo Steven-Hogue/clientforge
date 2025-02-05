@@ -7,11 +7,11 @@ from typing import TYPE_CHECKING
 
 from jsonpath_ng import JSONPath, parse
 
+from clientforge.clients.base import BaseClient
 from clientforge.exceptions import JSONPathNotFoundError
 from clientforge.paginate.base import BasePaginator
 
 if TYPE_CHECKING:
-    from clientforge.clients import AsyncForgeClient, ForgeClient
     from clientforge.models import Response
 
 
@@ -55,7 +55,7 @@ class OffsetPaginator(BasePaginator):
 
     def _sync_gen(
         self,
-        client: ForgeClient,
+        client: BaseClient,
         method: str,
         endpoint: str,
         params: dict | None = None,
@@ -119,7 +119,7 @@ class OffsetPaginator(BasePaginator):
 
     async def _async_gen(
         self,
-        client: AsyncForgeClient,
+        client: BaseClient,
         method: str,
         endpoint: str,
         params: dict | None = None,
