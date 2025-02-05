@@ -213,3 +213,8 @@ class BaseClient(ABC, Generic[HTTPXClientSubclass]):
         """Exit the async context manager."""
         await self._session.__aexit__(*args)
         return False
+
+    def __del__(self):
+        """Close the session when the object is deleted."""
+        if hasattr(self, "_session") and not self._session.is_closed:
+            self._session.close()
