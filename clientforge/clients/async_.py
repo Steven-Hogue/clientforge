@@ -7,7 +7,7 @@ import httpx
 from clientforge.auth.base import BaseAuth
 from clientforge.clients.base import BaseClient
 from clientforge.exceptions import HTTPStatusError
-from clientforge.models import Response
+from clientforge.models import ForgeModel, Response, Results
 from clientforge.paginate.base import BasePaginator
 
 logger = logging.getLogger(__name__)
@@ -31,6 +31,29 @@ class AsyncForgeClient(BaseClient[httpx.AsyncClient]):
             headers=headers,
             **kwargs,
         )
+
+    async def _model_request(
+        self,
+        method: str,
+        endpoint: str,
+        model: type[ForgeModel],
+        model_key: str | None = None,
+        params: dict | None = None,
+        top_n: int = 100,
+        **kwargs,
+    ) -> Results:
+        """Make a request and return a list of model objects."""
+        generator = await self._generate_pages(
+            method, endpoint, params=params, **kwargs
+        )
+
+        results = []
+        async for data in generator:
+            results.extend(data.to_model(model, model_key))
+            if len(results) >= top_n:
+                break
+
+        return Results(results[:top_n])
 
     async def _generate_pages(self, method, endpoint, params=None, **kwargs):
         if self._paginator is None:

@@ -107,8 +107,10 @@ def test_offset_paginator_gen_no_data_path(httpx_mock: HTTPXMock):
     client._paginator = OffsetPaginator(
         path_to_data="data", path_to_total="total", page_size=3
     )
-    with pytest.raises(JSONPathNotFoundError):
-        list(client._generate_pages("GET", "endpoint"))
+    pages = list(client._generate_pages("GET", "endpoint"))
+    assert len(pages) == 1
+    assert isinstance(pages[0], Response)
+    assert pages[0].json() == {"total": 5, "notdata": [0, 1, 2]}
 
 
 def test_offset_paginator_gen_no_data_path_in_second_response(
@@ -245,8 +247,10 @@ def test_offset_paginator_no_total_gen_no_data_path(httpx_mock: HTTPXMock):
 
     client = DummyClient("http://example.com/{endpoint}")
     client._paginator = OffsetPaginator(path_to_data="data", page_size=3)
-    with pytest.raises(JSONPathNotFoundError):
-        list(client._generate_pages("GET", "endpoint"))
+    pages = list(client._generate_pages("GET", "endpoint"))
+    assert len(pages) == 1
+    assert isinstance(pages[0], Response)
+    assert pages[0].json() == {"notdata": [0, 1, 2]}
 
 
 def test_offset_paginator_no_total_gen_no_data_path_in_second_response(
@@ -344,8 +348,10 @@ async def test_async_offset_paginator_gen_no_data_path(httpx_mock: HTTPXMock):
     client._paginator = OffsetPaginator(
         path_to_data="data", path_to_total="total", page_size=3
     )
-    with pytest.raises(JSONPathNotFoundError):
-        [page async for page in await client._generate_pages("GET", "endpoint")]
+    pages = [page async for page in await client._generate_pages("GET", "endpoint")]
+    assert len(pages) == 1
+    assert isinstance(pages[0], Response)
+    assert pages[0].json() == {"total": 5, "notdata": [0, 1, 2]}
 
 
 @pytest.mark.asyncio
@@ -491,8 +497,10 @@ async def test_async_offset_paginator_no_total_gen_no_data_path(httpx_mock: HTTP
 
     client = DummyAsyncClient("http://example.com/{endpoint}")
     client._paginator = OffsetPaginator(path_to_data="data", page_size=3)
-    with pytest.raises(JSONPathNotFoundError):
-        [page async for page in await client._generate_pages("GET", "endpoint")]
+    pages = [page async for page in await client._generate_pages("GET", "endpoint")]
+    assert len(pages) == 1
+    assert isinstance(pages[0], Response)
+    assert pages[0].json() == {"notdata": [0, 1, 2]}
 
 
 @pytest.mark.asyncio

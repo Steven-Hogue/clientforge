@@ -67,11 +67,12 @@ class OffsetPaginator(BasePaginator):
         response = client(method, endpoint, params=params, **kwargs)
         yield response
 
-        if not response.json():
+        if (
+            not response.json()
+            or not (response_data := self._path_to_data.find(response.json()))
+            or not isinstance(response_data, list)
+        ):
             return
-
-        if not (response_data := self._path_to_data.find(response.json())):
-            raise JSONPathNotFoundError("Data path not found in response.")
 
         if (
             self._path_to_total is not None
@@ -134,8 +135,12 @@ class OffsetPaginator(BasePaginator):
         if not response.json():
             return
 
-        if not (response_data := self._path_to_data.find(response.json())):
-            raise JSONPathNotFoundError("Data path not found in response.")
+        if (
+            not response.json()
+            or not (response_data := self._path_to_data.find(response.json()))
+            or not isinstance(response_data, list)
+        ):
+            return
 
         if (
             self._path_to_total is not None

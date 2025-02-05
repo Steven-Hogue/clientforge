@@ -8,7 +8,7 @@ from the JSON content.
 
 import json
 from dataclasses import dataclass
-from typing import TypeVar
+from typing import Generic, TypeVar
 
 import httpx
 from dataclass_wizard import JSONWizard
@@ -18,8 +18,27 @@ from clientforge.exceptions import InvalidJSONResponse
 MODEL = TypeVar("MODEL", bound="type[ForgeModel]")
 
 
+class Results(Generic[MODEL]):
+    """Wrapper around the models that has filtering capabilities."""
+
+    def __init__(self, model: MODEL | list[MODEL]) -> None:
+        """Initialize the response data.
+
+        Parameters
+        ----------
+            model: ForgeModel
+                The model class to convert the data to.
+        """
+        self.model: list[MODEL]
+
+        if not isinstance(model, list):
+            model = [model]
+
+        self.model = model
+
+
 @dataclass
-class ForgeModel(JSONWizard, key_case="CAMEL"):  # type: ignore # MyPy doesn't know about V1
+class ForgeModel(JSONWizard, key_case="CAMEL"):  # type: ignore
     """A base class for all models."""
 
     class _(JSONWizard.Meta):
@@ -76,16 +95,23 @@ class Response:
             MODEL
                 The model object.
         """
+        print(key)
+        print(type(self.json()))
         self_json = self.json()
-        if key is not None and isinstance(self_json, dict):
-            self_json = self_json[key]
-        elif key is not None and isinstance(self_json, list):
+        if key is not None and isinstance(self_json, list):
+            print("from_list")
             key = int(key)
             self_json = self_json[key]
+        elif key is not None and isinstance(self_json, dict):
+            print("from_dict")
+            self_json = self_json[key]
 
+        print(self_json)
         if isinstance(self_json, list):
+            print("from_list")
             return model_class.from_list(self_json)
         else:
+            print("from_dict")
             return model_class.from_dict(self_json)
 
     def get(self, key, default=None):

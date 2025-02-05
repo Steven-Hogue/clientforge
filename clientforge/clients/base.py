@@ -14,9 +14,11 @@ from typing import TYPE_CHECKING, Generic, TypeVar, get_args, get_origin
 
 import httpx
 
+from clientforge.models import Results
+
 if TYPE_CHECKING:
     from clientforge.auth.base import BaseAuth
-    from clientforge.models import Response
+    from clientforge.models import ForgeModel, Response
     from clientforge.paginate.base import BasePaginator
 
 logger = logging.getLogger(__name__)
@@ -92,6 +94,39 @@ class BaseClient(ABC, Generic[HTTPXClientSubclass]):
     def url(self) -> str:
         """The base URL of the API."""
         return self._api_url.format(endpoint="")
+
+    @abstractmethod
+    def _model_request(
+        self,
+        method: str,
+        endpoint: str,
+        model: type[ForgeModel],
+        model_key: str | None = None,
+        params: dict | None = None,
+        **kwargs,
+    ) -> Results | Coroutine[None, None, Results]:
+        """Make a request to the API and return a model.
+
+        Parameters
+        ----------
+            method: str
+                The HTTP method to use.
+            endpoint: str
+                The API endpoint to request.
+            model: ForgeModel
+                The model to convert the response to.
+            model_key: str, optional
+                The key in the response data to use as the model data.
+            params: dict, optional
+                The query parameters to send with the request.
+            **kwargs
+                Additional keyword arguments.
+
+        Returns
+        -------
+            ResponseData
+                The response data object.
+        """
 
     @abstractmethod
     def _generate_pages(
@@ -213,8 +248,3 @@ class BaseClient(ABC, Generic[HTTPXClientSubclass]):
         """Exit the async context manager."""
         await self._session.__aexit__(*args)
         return False
-
-    def __del__(self):
-        """Close the session when the object is deleted."""
-        if hasattr(self, "_session") and not self._session.is_closed:
-            self._session.close()

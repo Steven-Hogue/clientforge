@@ -17,6 +17,11 @@ class ConcClient(BaseClient[httpx.Client]):
     def _make_request(self, method, endpoint, params=None, **kwargs):
         pass
 
+    def _model_request(
+        self, method, endpoint, model, model_key=None, params=None, **kwargs
+    ):
+        pass
+
 
 def test_no_endpoint():
     """Test that a ValueError is raised when no endpoint is provided."""
@@ -33,6 +38,11 @@ def test_no_generic():
                 pass
 
             def _make_request(self, method, endpoint, params=None, **kwargs):
+                pass
+
+            def _model_request(
+                self, method, endpoint, model, model_key=None, params=None, **kwargs
+            ):
                 pass
 
         NoGenericClient("http://example.com/{endpoint}")
@@ -94,6 +104,11 @@ class AsyncConcClient(BaseClient[httpx.AsyncClient]):
         pass
 
     async def _make_request(self, method, endpoint, params=None, **kwargs):
+        pass
+
+    def _model_request(
+        self, method, endpoint, model, model_key=None, params=None, **kwargs
+    ):
         pass
 
 
