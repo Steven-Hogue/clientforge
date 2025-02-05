@@ -1,4 +1,9 @@
-"""Base class for Forge API clients."""
+"""Base class for the API clients.
+
+The base class for the API clients defines the common methods and properties
+that all clients should implement. This class itself should not be used directly,
+but should be subclassed to implement the specific API client.
+"""
 
 from __future__ import annotations
 
@@ -10,15 +15,13 @@ from typing import TYPE_CHECKING, Generic, TypeVar, get_args, get_origin
 from httpx._client import BaseClient as HTTPXClient
 from httpx._models import Request as HTTPXRequest
 
-from clientforge.models import Response
-
 if TYPE_CHECKING:
     from clientforge.auth.base import BaseAuth
+    from clientforge.models import Response
     from clientforge.paginate.base import BasePaginator
 
 logger = logging.getLogger(__name__)
 
-# Ensure T is a subclass of HTTPXClient but not HTTPXClient itself
 HTTPXClientSubclass = TypeVar("HTTPXClientSubclass", bound=HTTPXClient)
 
 

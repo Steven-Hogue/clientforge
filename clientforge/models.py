@@ -1,6 +1,13 @@
-"""Models for the clientforge package."""
+"""Models for the results of the API requests.
+
+The ForgeModel is designed to be a base class for all models defined in the
+user's code. The Response class is used to represent the response from the
+server and provides methods to convert the response to a model or get values
+from the JSON content.
+"""
 
 import json
+from dataclasses import dataclass
 from typing import TypeVar
 
 from dataclass_wizard import JSONWizard
@@ -11,6 +18,7 @@ from clientforge.exceptions import InvalidJSONResponse
 MODEL = TypeVar("MODEL", bound="type[ForgeModel]")
 
 
+@dataclass
 class ForgeModel(JSONWizard):
     """A base class for all models."""
 

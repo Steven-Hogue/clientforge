@@ -1,4 +1,4 @@
-"""Exceptions that are raised by the clientforge package."""
+"""Exceptions that are raised throughout."""
 
 # API exceptions
 

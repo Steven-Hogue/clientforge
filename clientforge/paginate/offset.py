@@ -8,11 +8,11 @@ from typing import TYPE_CHECKING
 from jsonpath_ng import JSONPath, parse
 
 from clientforge.exceptions import JSONPathNotFoundError
-from clientforge.models import Response
 from clientforge.paginate.base import BasePaginator
 
 if TYPE_CHECKING:
     from clientforge.clients import AsyncForgeClient, ForgeClient
+    from clientforge.models import Response
 
 
 class OffsetPaginator(BasePaginator):

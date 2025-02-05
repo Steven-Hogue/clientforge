@@ -1,4 +1,4 @@
-"""Authentication module."""
+"""Authentication modules."""
 
 __all__ = ["ClientCredentialsOAuth2Auth"]
 

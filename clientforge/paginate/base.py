@@ -1,4 +1,9 @@
-"""Base pagination class."""
+"""The base paginator class.
+
+The base paginator class is designed to be subclassed by other paginator classes,
+where each is responsible for paginating through the results of a request in a
+specific manner.
+"""
 
 from __future__ import annotations
 
@@ -8,10 +13,9 @@ from typing import TYPE_CHECKING
 
 from jsonpath_ng import JSONPath, parse
 
-from clientforge.models import Response
-
 if TYPE_CHECKING:
     from clientforge.clients import AsyncForgeClient, ForgeClient
+    from clientforge.models import Response
 
 
 class BasePaginator(ABC):
