@@ -14,7 +14,7 @@ from typing import TYPE_CHECKING, Generic, TypeVar, get_args, get_origin
 
 import httpx
 
-from clientforge.models import Results
+from clientforge.models import Result
 
 if TYPE_CHECKING:
     from clientforge.auth.base import BaseAuth
@@ -104,7 +104,7 @@ class BaseClient(ABC, Generic[HTTPXClientSubclass]):
         model_key: str | None = None,
         params: dict | None = None,
         **kwargs,
-    ) -> Results | Coroutine[None, None, Results]:
+    ) -> Result | Coroutine[None, None, Result]:
         """Make a request to the API and return a model.
 
         Parameters
