@@ -12,7 +12,7 @@ import httpx
 import jsonpath_ng.ext
 from dataclass_wizard import JSONWizard
 
-from clientforge.exceptions import InvalidJSONResponse
+from clientforge.exceptions import InvalidJSONResponse, ModelCoercionError
 from clientforge.models.fields import Field
 
 if TYPE_CHECKING:
@@ -262,10 +262,16 @@ class Response:
         elif key is not None and isinstance(self_json, dict):
             self_json = self_json[key]
 
-        if isinstance(self_json, list):
-            return model_class.from_list(self_json)
-        else:
-            return [model_class.from_dict(self_json)]
+        try:
+            if isinstance(self_json, list):
+                return model_class.from_list(self_json)
+            else:
+                return [model_class.from_dict(self_json)]
+        except TypeError as err:
+            raise ModelCoercionError(
+                "Error converting response to model "
+                f"with key {repr(key)}: {self.json()}"
+            ) from err
 
     def get(self, key, default=None):
         """Get a value from the JSON content."""
