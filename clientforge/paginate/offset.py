@@ -74,16 +74,14 @@ class OffsetPaginator(BasePaginator):
         ):
             return
 
-        if (
-            self._path_to_total is not None
-        ):  # If we are able to extract the total number of results
-            # Extract the total number of results from the response
+        if self._path_to_total is not None:
             response_total = self._path_to_total.find(response.json())
-            if len(response_total) == 0:
-                raise JSONPathNotFoundError("Total path not found in response.")
-            total = response_total[0].value
-
-            if total <= self._page_size:
+            if (
+                len(response_total) == 0
+                or (total := response_total[0].value) <= self._page_size
+            ):
+                # If no total is found or the total is less than the page size
+                #  assume we have reached the end of the results
                 return
 
             # Paginate through the results
@@ -142,16 +140,14 @@ class OffsetPaginator(BasePaginator):
         ):
             return
 
-        if (
-            self._path_to_total is not None
-        ):  # If we are able to extract the total number of results
-            # Extract the total number of results from the response
+        if self._path_to_total is not None:
             response_total = self._path_to_total.find(response.json())
-            if len(response_total) == 0:
-                raise JSONPathNotFoundError("Total path not found in response.")
-            total = response_total[0].value
-
-            if total <= self._page_size:
+            if (
+                len(response_total) == 0
+                or (total := response_total[0].value) <= self._page_size
+            ):
+                # If no total is found or the total is less than the page size
+                #  assume we have reached the end of the results
                 return
 
             # Paginate through the results
