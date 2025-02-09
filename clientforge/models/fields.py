@@ -91,6 +91,19 @@ class FieldIterable:
 class Field:
     """A class to represent a field in a model."""
 
+    def __init__(self, owner: type[ForgeModel], name: str) -> None:
+        """Initialize the field.
+
+        Parameters
+        ----------
+            owner: type[ForgeModel]
+                The model that the field belongs to.
+            name: str
+                The name of the field.
+        """
+        self.owner = owner
+        self.name = name
+
     @property
     def length(self):
         """Return a FieldLength object for the field."""
@@ -100,11 +113,6 @@ class Field:
     def where(self):
         """Return a FieldIterable object for the field."""
         return FieldIterable(self)
-
-    def __set_name__(self, owner, name) -> None:
-        """Set the name of the field and the owner class."""
-        self.owner: type[ForgeModel] = owner
-        self.name: str = name
 
     def __lt__(self, other):
         """Return a condition for the field being lt the other value."""
@@ -125,10 +133,6 @@ class Field:
     def __gt__(self, other):
         """Return a condition for the field being gt the other value."""
         return Condition(self, ConditionOperator.GT, other)
-
-    def __hash__(self):
-        """Return a hash of the field name (required for dataclasses)."""
-        return hash(self.name)
 
     def __str__(self):
         """Return a string representation of the field."""

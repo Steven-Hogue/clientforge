@@ -176,16 +176,20 @@ class Result(Generic[MODEL]):
 class ForgeModelMeta(JSONWizard.Meta, ABCMeta):
     """Metaclass for the ForgeModel class."""
 
-    def __new__(cls, name, bases, namespace, **kwargs):
+    def __new__(
+        cls: type[ForgeModelMeta],
+        name: str,
+        bases: tuple[type, ...],
+        namespace: dict,
+        **kwargs,
+    ) -> type[ForgeModel]:
         """Create the new class with the Field attributes."""
-        new_namespace = {**namespace}
-        for field_name in namespace.get("__annotations__", {}):
-            new_namespace[field_name] = Field()
-
-        new_cls = super().__new__(cls, name, bases, new_namespace, **kwargs)
-
+        new_cls = super().__new__(cls, name, bases, namespace, **kwargs)
         if new_cls.__dict__.get("__dataclass_params__") is None:
-            new_cls = dataclass(new_cls)
+            dataclass(new_cls)
+
+        for field_name in namespace.get("__annotations__", {}):
+            setattr(new_cls, field_name, Field(owner=new_cls, name=field_name))
 
         return new_cls
 
@@ -238,7 +242,7 @@ class Response:
                 f"Invalid JSON response from {self.url}: {self.content.decode()}"
             ) from err
 
-    def to_model(self, model_class: MODEL, key: str | int | None = None) -> MODEL:
+    def to_model(self, model_class: MODEL, key: str | int | None = None) -> list[MODEL]:
         """Convert the response to a model.
 
         Parameters
@@ -248,8 +252,8 @@ class Response:
 
         Returns
         -------
-            MODEL
-                The model object.
+            list[MODEL]
+                A list of model objects.
         """
         self_json = self.json()
         if key is not None and isinstance(self_json, list):
@@ -261,7 +265,7 @@ class Response:
         if isinstance(self_json, list):
             return model_class.from_list(self_json)
         else:
-            return model_class.from_dict(self_json)
+            return [model_class.from_dict(self_json)]
 
     def get(self, key, default=None):
         """Get a value from the JSON content."""
