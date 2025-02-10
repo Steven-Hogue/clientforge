@@ -146,8 +146,25 @@ class Result(Generic[MODEL]):
             for key, parser in parsers.items():
                 value = parser.find(model)
                 if value:
-                    model_output[key] = value[0].value
+                    model_output[key] = value
             output.append(model_output)
+
+        for key in parsers:
+            if all(len(mo[key]) == 1 for mo in output if key in mo):
+
+                def update_fn(x):
+                    return x[0].value
+            else:
+
+                def update_fn(x):
+                    return [v.value for v in x]
+
+            for mo in output:
+                if key in mo:
+                    mo[key] = update_fn(mo[key])
+                else:
+                    mo[key] = None
+
         return output
 
     def one(self) -> MODEL:
