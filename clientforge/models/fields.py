@@ -240,18 +240,7 @@ class ConditionIterable:
 
     def evaluate(self, model: ForgeModel) -> bool:
         """Evaluate the condition on the model."""
-        cur_field = self.field
-        names = [cur_field.name]
-        while cur_field.parent:
-            cur_field = cur_field.parent
-            names.append(cur_field.name)
-
-        field_value = model
-        for name in reversed(names):
-            if field_value is None:
-                return False
-            self.condition.field = cur_field
-            field_value = getattr(field_value, name)
+        field_value = getattr(model, self.field.name)
 
         if self.strict:
             out = all(self.condition.evaluate(item) for item in field_value)

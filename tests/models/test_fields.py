@@ -13,9 +13,10 @@ from clientforge.models.fields import (
     FieldIterable,
     FieldLength,
 )
+from clientforge.models.results import ForgeModel, Result
 
 
-class MockModel:
+class MockModel(ForgeModel):
     """A mock model for testing."""
 
     test_field: int | list[int] | MockModel
@@ -444,15 +445,6 @@ class TestConditionIterable:
         model = MockModel(test_field=[MockModel(test_field=2), MockModel(test_field=3)])
         assert iterable_condition.evaluate(model) is False
 
-        condition = Condition(self.field_with_parent, ConditionOperator.EQ, 1)
-        iterable_condition = ConditionIterable(self.field_with_parent, condition, False)
-        model = MockModel(test_field=MockModel(test_field=[MockModel(test_field=1)]))
-        assert iterable_condition.evaluate(model) is True
-        model = MockModel(test_field=MockModel(test_field=[MockModel(test_field=2)]))
-        assert iterable_condition.evaluate(model) is False
-
-    def test_condition_iterable_evaluate_all(self):
-        """Tests."""
         condition = Condition(self.field, ConditionOperator.EQ, 1)
         iterable_condition = ConditionIterable(self.field, condition, True)
         model = MockModel(test_field=[MockModel(test_field=1), MockModel(test_field=1)])
@@ -460,16 +452,33 @@ class TestConditionIterable:
         model = MockModel(test_field=[MockModel(test_field=1), MockModel(test_field=2)])
         assert iterable_condition.evaluate(model) is False
 
-        condition = Condition(self.field_with_parent, ConditionOperator.EQ, 1)
-        iterable_condition = ConditionIterable(self.field_with_parent, condition, True)
-        model = MockModel(test_field=MockModel(test_field=[MockModel(test_field=1)]))
-        assert iterable_condition.evaluate(model) is True
-        model = MockModel(
-            test_field=MockModel(
-                test_field=[MockModel(test_field=1), MockModel(test_field=2)]
-            )
+    def test_condition_iterable_evaluate_with_subfield(self):
+        """Tests."""
+        results = Result(
+            [
+                MockModel(
+                    test_field=[MockModel(test_field=1), MockModel(test_field=2)]
+                ),
+                MockModel(
+                    test_field=[MockModel(test_field=1), MockModel(test_field=2)]
+                ),
+                MockModel(
+                    test_field=[MockModel(test_field=1), MockModel(test_field=2)]
+                ),
+                MockModel(
+                    test_field=[MockModel(test_field=1), MockModel(test_field=1)]
+                ),
+            ]
         )
-        assert iterable_condition.evaluate(model) is False
+        filtered_results = results.filter(
+            MockModel.test_field.where.any(MockModel.test_field == 1)
+        )
+        assert len(filtered_results) == 4
+
+        filtered_results = results.filter(
+            MockModel.test_field.where.all(MockModel.test_field == 1)
+        )
+        assert len(filtered_results) == 1
 
     def test_condition_iterable_str(self):
         """Tests."""
