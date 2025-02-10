@@ -62,6 +62,74 @@ class FieldLength:
         return f"FieldLength({self.field})"
 
 
+class Field:
+    """A class to represent a field in a model."""
+
+    def __init__(
+        self, owner: type[ForgeModel], name: str, parent: Field | None = None
+    ) -> None:
+        """Initialize the field.
+
+        Parameters
+        ----------
+            owner: type[ForgeModel]
+                The model that the field belongs to.
+            name: str
+                The name of the field.
+        """
+        self.owner = owner
+        self.name = name
+        self.parent = parent
+
+    @property
+    def length(self):
+        """Return a FieldLength object for the field."""
+        return FieldLength(self)
+
+    @property
+    def where(self):
+        """Return a FieldIterable object for the field."""
+        return FieldIterable(self)
+
+    def __getattr__(self, name):
+        """Return the attribute if it exists."""
+        valid_type = None
+        for _type in self.owner.__annotations__.get(self.name).__args__:
+            if hasattr(_type, name):
+                valid_type = _type
+                break
+
+        return (
+            Field(valid_type, name, self)
+            if valid_type
+            else super().__getattribute__(name)
+        )
+
+    def __lt__(self, other):
+        """Return a condition for the field being lt the other value."""
+        return Condition(self, ConditionOperator.LT, other)
+
+    def __le__(self, other):
+        """Return a condition for the field being lt or equal to the other value."""
+        return Condition(self, ConditionOperator.LE, other)
+
+    def __eq__(self, other):
+        """Return a condition for the field being equal to the other value."""
+        return Condition(self, ConditionOperator.EQ, other)
+
+    def __ge__(self, other):
+        """Return a condition for the field being gt or equal to the other value."""
+        return Condition(self, ConditionOperator.GE, other)
+
+    def __gt__(self, other):
+        """Return a condition for the field being gt the other value."""
+        return Condition(self, ConditionOperator.GT, other)
+
+    def __str__(self):
+        """Return a string representation of the field."""
+        return f"Field({self.owner.__name__}.{self.name})"
+
+
 class FieldIterable:
     """A class to represent an iterable field in a model."""
 
@@ -88,55 +156,67 @@ class FieldIterable:
         return f"FieldIterable({self.field})"
 
 
-class Field:
-    """A class to represent a field in a model."""
+class Condition:
+    """A class to represent a condition on a model field."""
 
-    def __init__(self, owner: type[ForgeModel], name: str) -> None:
-        """Initialize the field.
+    def __init__(self, field: Field, operator: ConditionOperator, value) -> None:
+        """Initialize the condition.
 
         Parameters
         ----------
-            owner: type[ForgeModel]
-                The model that the field belongs to.
-            name: str
-                The name of the field.
+            field: Field
+                The field to apply the condition to.
+            operator: ConditionOperator
+                The operator to apply to the field.
+            value: Any
+                The value to compare the field to.
         """
-        self.owner = owner
-        self.name = name
+        self.field = field
+        self.operator = operator
+        self.value = value
 
-    @property
-    def length(self):
-        """Return a FieldLength object for the field."""
-        return FieldLength(self)
+    def evaluate(self, model: ForgeModel) -> bool:
+        """Evaluate the condition on the model."""
+        cur_field = self.field
+        names = [cur_field.name]
+        while cur_field.parent:
+            cur_field = cur_field.parent
+            names.append(cur_field.name)
 
-    @property
-    def where(self):
-        """Return a FieldIterable object for the field."""
-        return FieldIterable(self)
+        field_value = model
+        for name in reversed(names):
+            if field_value is None:
+                return False
+            field_value = getattr(field_value, name)
 
-    def __lt__(self, other):
-        """Return a condition for the field being lt the other value."""
-        return Condition(self, ConditionOperator.LT, other)
+        match self.operator:
+            case ConditionOperator.LT:
+                return field_value < self.value
+            case ConditionOperator.LE:
+                return field_value <= self.value
+            case ConditionOperator.EQ:
+                return field_value == self.value
+            case ConditionOperator.GE:
+                return field_value >= self.value
+            case ConditionOperator.GT:
+                return field_value > self.value
 
-    def __le__(self, other):
-        """Return a condition for the field being lt or equal to the other value."""
-        return Condition(self, ConditionOperator.LE, other)
+            case ConditionOperator.LEN_LT:
+                return len(field_value) < self.value
+            case ConditionOperator.LEN_LE:
+                return len(field_value) <= self.value
+            case ConditionOperator.LEN_EQ:
+                return len(field_value) == self.value
+            case ConditionOperator.LEN_GE:
+                return len(field_value) >= self.value
+            case ConditionOperator.LEN_GT:
+                return len(field_value) > self.value
+            case _:
+                raise ValueError(f"Unsupported operator: {self.operator}")
 
-    def __eq__(self, other):
-        """Return a condition for the field being equal to the other value."""
-        return Condition(self, ConditionOperator.EQ, other)
-
-    def __ge__(self, other):
-        """Return a condition for the field being gt or equal to the other value."""
-        return Condition(self, ConditionOperator.GE, other)
-
-    def __gt__(self, other):
-        """Return a condition for the field being gt the other value."""
-        return Condition(self, ConditionOperator.GT, other)
-
-    def __str__(self):
-        """Return a string representation of the field."""
-        return f"Field({self.owner.__name__}.{self.name})"
+    def __str__(self) -> str:
+        """Return a string representation of the condition."""
+        return f"Condition({self.field} {self.operator} {self.value})"
 
 
 class ConditionIterable:
@@ -172,56 +252,3 @@ class ConditionIterable:
     def __str__(self):
         """Return a string representation of the condition."""
         return f"ConditionIterable({self.condition} over {self.field})"
-
-
-class Condition:
-    """A class to represent a condition on a model field."""
-
-    def __init__(self, field: Field, operator: ConditionOperator, value) -> None:
-        """Initialize the condition.
-
-        Parameters
-        ----------
-            field: Field
-                The field to apply the condition to.
-            operator: ConditionOperator
-                The operator to apply to the field.
-            value: Any
-                The value to compare the field to.
-        """
-        self.field = field
-        self.operator = operator
-        self.value = value
-
-    def evaluate(self, model: ForgeModel) -> bool:
-        """Evaluate the condition on the model."""
-        field_value = getattr(model, self.field.name)
-
-        match self.operator:
-            case ConditionOperator.LT:
-                return field_value < self.value
-            case ConditionOperator.LE:
-                return field_value <= self.value
-            case ConditionOperator.EQ:
-                return field_value == self.value
-            case ConditionOperator.GE:
-                return field_value >= self.value
-            case ConditionOperator.GT:
-                return field_value > self.value
-
-            case ConditionOperator.LEN_LT:
-                return len(field_value) < self.value
-            case ConditionOperator.LEN_LE:
-                return len(field_value) <= self.value
-            case ConditionOperator.LEN_EQ:
-                return len(field_value) == self.value
-            case ConditionOperator.LEN_GE:
-                return len(field_value) >= self.value
-            case ConditionOperator.LEN_GT:
-                return len(field_value) > self.value
-            case _:
-                raise ValueError(f"Unsupported operator: {self.operator}")
-
-    def __str__(self) -> str:
-        """Return a string representation of the condition."""
-        return f"Condition({self.field} {self.operator} {self.value})"
