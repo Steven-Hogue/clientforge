@@ -47,9 +47,9 @@ dev = [
 ]
 
 [project.urls]
-homepage = "https://github.com/Steven-Hogue/clientforge"
-repository = "https://github.com/Steven-Hogue/clientforge"
-changelog = "https://github.com/Steven-Hogue/clientforge/CHANGELOG.md"
+Homepage = "https://github.com/Steven-Hogue/clientforge"
+Repository = "https://github.com/Steven-Hogue/clientforge"
+Changelog = "https://github.com/Steven-Hogue/clientforge/blob/main/CHANGELOG.md"
 
 [tool.ruff]
 line-length = 88
