@@ -10,13 +10,25 @@ from clientforge.models.fields import Condition, ConditionOperator
 from clientforge.models.results import ForgeModel, Response, Result
 
 
+class MockModelChild(ForgeModel):
+    """A mock model for testing."""
+
+    name: str
+    age: int
+
+
 class MockModel(ForgeModel):
     """A mock model for testing."""
 
     name: str
     age: int
-    pets: list[str]
-    children: list[ForgeModel]
+    pets: list[str] | None = None
+    children: list[MockModelChild] | None = None
+
+
+class MockModelKey(ForgeModel):
+    """A mock model for testing with a key."""
+
     key: str
 
 
@@ -28,8 +40,25 @@ class TestResult:
         self.model1 = MockModel(
             name="Alice", age=25, pets=["Fred", "Fido"], children=[]
         )
-        self.model2 = MockModel(name="Bob", age=30, pets=["Rex"], children=[])
+        self.model2 = MockModel(
+            name="Bob",
+            age=30,
+            pets=["Rex"],
+            children=[
+                MockModelChild(name="Sally", age=5),
+                MockModelChild(name="John", age=10),
+            ],
+        )
         self.result = Result((self.model1, self.model2))
+
+    def test_result_initialization(self):
+        """Test the initialization of the result."""
+        assert (
+            Result(self.model1).model
+            == Result((self.model1,)).model
+            == Result([self.model1]).model
+            == (self.model1,)
+        )
 
     def test_filter(self):
         """Test the filter method of the result."""
@@ -51,6 +80,22 @@ class TestResult:
         assert len(selected_result) == 2
         assert selected_result[0] == {"name": "Alice", "age": 25}
         assert selected_result[1] == {"name": "Bob", "age": 30}
+
+        selected_result = self.result.select(all_pets="pets[*]")
+        assert len(selected_result) == 2
+        assert selected_result[0] == {"all_pets": ["Fred", "Fido"]}
+
+        selected_result = self.result.select(all_children="children[*]")
+        assert len(selected_result) == 2
+        assert selected_result[0] == {"all_children": None}
+        assert selected_result[1] == {
+            "all_children": [self.model2.children[0], self.model2.children[1]]
+        }
+
+        selected_result = self.result.select(all_children="children[*].name")
+        assert len(selected_result) == 2
+        assert selected_result[0] == {"all_children": None}
+        assert selected_result[1] == {"all_children": ["Sally", "John"]}
 
     def test_one(self):
         """Test the one method of the result."""
@@ -100,8 +145,9 @@ class TestResponse:
     def test_to_model(self):
         """Test the to_model method of the response."""
         model = self.response.to_model(MockModel)
-        assert model.name == "Alice"
-        assert model.age == 25
+        assert len(model) == 1
+        assert model[0].name == "Alice"
+        assert model[0].age == 25
 
     def test_get(self):
         """Test the get method of the response."""
@@ -145,8 +191,8 @@ class TestResponse:
         content = b'{"key": "value"}'
         url = httpx.URL("http://example.com")
         response = Response(status, content, url)
-        model = response.to_model(MockModel)
-        assert model.key == "value"
+        model = response.to_model(MockModelKey)
+        assert model[0].key == "value"
 
     def test_response_to_model_key(self):
         """Test the to_model method of the response with a key."""
@@ -154,8 +200,8 @@ class TestResponse:
         content = b'{"data": {"key": "value"}}'
         url = httpx.URL("http://example.com")
         response = Response(status, content, url)
-        model = response.to_model(MockModel, key="data")
-        assert model.key == "value"
+        model = response.to_model(MockModelKey, key="data")
+        assert model[0].key == "value"
 
     def test_response_to_model_list(self):
         """Test the to_model method of the response with a list."""
@@ -163,7 +209,7 @@ class TestResponse:
         content = b'[{"key": "value"}]'
         url = httpx.URL("http://example.com")
         response = Response(status, content, url)
-        model = response.to_model(MockModel)
+        model = response.to_model(MockModelKey)
         assert model[0].key == "value"
 
     def test_response_to_model_list_key(self):
@@ -172,10 +218,10 @@ class TestResponse:
         content = b'[{"key": "value"}, {"key": "value2"}]'
         url = httpx.URL("http://example.com")
         response = Response(status, content, url)
-        model = response.to_model(MockModel, key=0)
-        model2 = response.to_model(MockModel, key=1)
-        assert model.key == "value"
-        assert model2.key == "value2"
+        model = response.to_model(MockModelKey, key=0)
+        model2 = response.to_model(MockModelKey, key=1)
+        assert model[0].key == "value"
+        assert model2[0].key == "value2"
 
     def test_response_get(self):
         """Test the get method of the response."""
