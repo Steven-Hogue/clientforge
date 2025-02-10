@@ -12,7 +12,7 @@ import httpx
 import jsonpath_ng.ext
 from dataclass_wizard import JSONWizard
 
-from clientforge.exceptions import InvalidJSONResponse
+from clientforge.exceptions import InvalidJSONResponse, ModelCoercionError
 from clientforge.models.fields import Field
 
 if TYPE_CHECKING:
@@ -146,8 +146,25 @@ class Result(Generic[MODEL]):
             for key, parser in parsers.items():
                 value = parser.find(model)
                 if value:
-                    model_output[key] = value[0].value
+                    model_output[key] = value
             output.append(model_output)
+
+        for key in parsers:
+            if all(len(mo[key]) == 1 for mo in output if key in mo):
+
+                def update_fn(x):
+                    return x[0].value
+            else:
+
+                def update_fn(x):
+                    return [v.value for v in x]
+
+            for mo in output:
+                if key in mo:
+                    mo[key] = update_fn(mo[key])
+                else:
+                    mo[key] = None
+
         return output
 
     def one(self) -> MODEL:
@@ -176,16 +193,20 @@ class Result(Generic[MODEL]):
 class ForgeModelMeta(JSONWizard.Meta, ABCMeta):
     """Metaclass for the ForgeModel class."""
 
-    def __new__(cls, name, bases, namespace, **kwargs):
+    def __new__(
+        cls: type[ForgeModelMeta],
+        name: str,
+        bases: tuple[type, ...],
+        namespace: dict,
+        **kwargs,
+    ) -> type[ForgeModel]:
         """Create the new class with the Field attributes."""
-        new_namespace = {**namespace}
-        for field_name in namespace.get("__annotations__", {}):
-            new_namespace[field_name] = Field()
-
-        new_cls = super().__new__(cls, name, bases, new_namespace, **kwargs)
-
+        new_cls = super().__new__(cls, name, bases, namespace, **kwargs)
         if new_cls.__dict__.get("__dataclass_params__") is None:
-            new_cls = dataclass(new_cls)
+            dataclass(new_cls)
+
+        for field_name in namespace.get("__annotations__", {}):
+            setattr(new_cls, field_name, Field(owner=new_cls, name=field_name))
 
         return new_cls
 
@@ -238,7 +259,7 @@ class Response:
                 f"Invalid JSON response from {self.url}: {self.content.decode()}"
             ) from err
 
-    def to_model(self, model_class: MODEL, key: str | int | None = None) -> MODEL:
+    def to_model(self, model_class: MODEL, key: str | int | None = None) -> list[MODEL]:
         """Convert the response to a model.
 
         Parameters
@@ -248,8 +269,8 @@ class Response:
 
         Returns
         -------
-            MODEL
-                The model object.
+            list[MODEL]
+                A list of model objects.
         """
         self_json = self.json()
         if key is not None and isinstance(self_json, list):
@@ -258,10 +279,16 @@ class Response:
         elif key is not None and isinstance(self_json, dict):
             self_json = self_json[key]
 
-        if isinstance(self_json, list):
-            return model_class.from_list(self_json)
-        else:
-            return model_class.from_dict(self_json)
+        try:
+            if isinstance(self_json, list):
+                return model_class.from_list(self_json)
+            else:
+                return [model_class.from_dict(self_json)]
+        except TypeError as err:
+            raise ModelCoercionError(
+                "Error converting response to model "
+                f"with key {repr(key)}: {self.json()}"
+            ) from err
 
     def get(self, key, default=None):
         """Get a value from the JSON content."""

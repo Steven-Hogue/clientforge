@@ -19,6 +19,28 @@ class JSONPathNotFoundError(APIError):
     """Raised when the JSONPath does not match any data in the response."""
 
 
+# Model exceptions
+
+
+class ModelError(Exception):
+    """Raised when an error occurs during model conversion."""
+
+
+class ModelCoercionError(ModelError):
+    """Raised when an error occurs during model coercion."""
+
+
+# Field/condition exceptions
+
+
+class FieldError(Exception):
+    """Raised when an error occurs during field creation."""
+
+
+class UnknownOperatorError(FieldError):
+    """Raised when an unknown operator is used in a condition."""
+
+
 # Pagination exceptions
 
 

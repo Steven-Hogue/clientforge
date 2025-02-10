@@ -103,6 +103,7 @@ class BaseClient(ABC, Generic[HTTPXClientSubclass]):
         model: type[ForgeModel],
         model_key: str | None = None,
         params: dict | None = None,
+        top_n: int = 100,
         **kwargs,
     ) -> Result | Coroutine[None, None, Result]:
         """Make a request to the API and return a model.
@@ -119,13 +120,15 @@ class BaseClient(ABC, Generic[HTTPXClientSubclass]):
                 The key in the response data to use as the model data.
             params: dict, optional
                 The query parameters to send with the request.
+            top_n: int, optional
+                The maximum number of results to return.
             **kwargs
                 Additional keyword arguments.
 
         Returns
         -------
-            ResponseData
-                The response data object.
+            Result
+                A Result object containing the model data.
         """
 
     @abstractmethod

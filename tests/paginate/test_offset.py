@@ -145,8 +145,10 @@ def test_offset_paginator_gen_no_total_path(httpx_mock: HTTPXMock):
     client._paginator = OffsetPaginator(
         path_to_data="data", path_to_total="total", page_size=3
     )
-    with pytest.raises(JSONPathNotFoundError):
-        list(client._generate_pages("GET", "endpoint"))
+    pages = list(client._generate_pages("GET", "endpoint"))
+    assert len(pages) == 1
+    assert isinstance(pages[0], Response)
+    assert pages[0].json() == {"nottotal": 5, "data": [0, 1, 2]}
 
 
 # OffsetPaginator without total tests
@@ -388,8 +390,10 @@ async def test_async_offset_paginator_gen_no_total_path(httpx_mock: HTTPXMock):
     client._paginator = OffsetPaginator(
         path_to_data="data", path_to_total="total", page_size=3
     )
-    with pytest.raises(JSONPathNotFoundError):
-        [page async for page in await client._generate_pages("GET", "endpoint")]
+    pages = [page async for page in await client._generate_pages("GET", "endpoint")]
+    assert len(pages) == 1
+    assert isinstance(pages[0], Response)
+    assert pages[0].json() == {"nottotal": 5, "data": [0, 1, 2]}
 
 
 # OffsetPaginator without total tests

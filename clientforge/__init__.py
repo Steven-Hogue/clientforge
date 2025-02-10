@@ -18,9 +18,12 @@ __all__ = [
     "AsyncForgeClient",
     "ForgeModel",
     "Response",
+    "Result",
+    "OffsetPaginator",
 ]
 
 from clientforge.auth import ClientCredentialsOAuth2Auth
 from clientforge.clients.async_ import AsyncForgeClient
 from clientforge.clients.sync import ForgeClient
-from clientforge.models import ForgeModel, Response
+from clientforge.models import ForgeModel, Response, Result
+from clientforge.paginate import OffsetPaginator

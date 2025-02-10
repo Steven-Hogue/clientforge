@@ -1,3 +1,14 @@
+## v0.7.0 (2025-02-09)
+
+### Fix
+
+- **fields**: fixed inconsistent behaviour on fields filter
+- **fields/conditions**: gave fields a parent property, allowing recursive and nested conditional queries
+- **results-select**: fixed resutlts select to prefer to return the corrent type (list or single value) - only locally accurate
+- **results**: upgraded dw for a datetime issue in V1; added custom exception for conversion errors
+- **offset-pagination**: fixed offset pagination to work on single results
+- **fields**: greatly simplified field definition on models; made to_model return list always
+
 ## v0.6.0 (2025-02-07)
 
 ### Feat
