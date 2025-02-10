@@ -3,34 +3,24 @@
 >
 > I am very open to feedback and considering others use cases, so please open an issue if you have any suggestions, requests, or issues!
 
-# Table of Contents
-
-- [Table of Contents](#table-of-contents)
-- [ClientForge](#clientforge)
-  - [Features](#features)
-  - [Installation](#installation)
-  - [Overview](#overview)
-    - [Components](#components)
-  - [Creation](#creation)
-    - [Model Definitions](#model-definitions)
-    - [Client Definition](#client-definition)
-  - [Simple Usage](#simple-usage)
-  - [Advanced Usage](#advanced-usage)
-    - [Selecting Data](#selecting-data)
-    - [Querying Data](#querying-data)
-    - [Filtering Data](#filtering-data)
-  - [Changelog](#changelog)
-  - [License](#license)
-  - [Contact](#contact)
-
-# ClientForge
-
 ClientForge is a Python library designed to simplify interactions with REST APIs from Python. It supports a variety of authentication and pagination methods, and provides a robust framework for building and managing Python REST API clients.
 
 It also allows quick and easy handling of results, permitting a variety of filtering and sorting options.
 
-## Features
-
+- [Installation](#installation)
+- [Overview](#overview)
+  - [Components](#components)
+- [Creation](#creation)
+  - [Model Definitions](#model-definitions)
+  - [Client Definition](#client-definition)
+- [Simple Usage](#simple-usage)
+- [Advanced Usage](#advanced-usage)
+  - [Selecting Data](#selecting-data)
+  - [Querying Data](#querying-data)
+  - [Filtering Data](#filtering-data)
+- [Changelog](#changelog)
+- [License](#license)
+- [Contact](#contact)
 
 ## Installation
 
