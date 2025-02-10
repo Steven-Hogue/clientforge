@@ -42,7 +42,6 @@ class AsyncForgeClient(BaseClient[httpx.AsyncClient]):
         top_n: int = 100,
         **kwargs,
     ) -> Result:
-        """Make a request and return a list of model objects."""
         generator = await self._generate_pages(
             method, endpoint, params=params, **kwargs
         )
