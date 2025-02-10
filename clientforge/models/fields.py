@@ -5,6 +5,8 @@ from __future__ import annotations
 from enum import Enum
 from typing import TYPE_CHECKING
 
+from clientforge.exceptions import UnknownOperatorError
+
 if TYPE_CHECKING:
     from clientforge.models.results import ForgeModel
 
@@ -66,7 +68,7 @@ class Field:
     """A class to represent a field in a model."""
 
     def __init__(
-        self, owner: type[ForgeModel], name: str, parent: Field | None = None
+        self, owner: type[ForgeModel] | None, name: str, parent: Field | None = None
     ) -> None:
         """Initialize the field.
 
@@ -93,15 +95,9 @@ class Field:
 
     def __getattr__(self, name):
         """Return the attribute if it exists."""
-        valid_type = None
-        for _type in self.owner.__annotations__.get(self.name).__args__:
-            if hasattr(_type, name):
-                valid_type = _type
-                break
-
         return (
-            Field(valid_type, name, self)
-            if valid_type
+            Field(None, name, self)
+            if self.owner.__annotations__.get(self.name)
             else super().__getattribute__(name)
         )
 
@@ -127,7 +123,11 @@ class Field:
 
     def __str__(self):
         """Return a string representation of the field."""
-        return f"Field({self.owner.__name__}.{self.name})"
+        return (
+            f"Field({self.owner.__name__}.{self.name})"
+            if self.parent is None
+            else (f"Field({self.parent}.{self.name})")
+        )
 
 
 class FieldIterable:
@@ -212,7 +212,7 @@ class Condition:
             case ConditionOperator.LEN_GT:
                 return len(field_value) > self.value
             case _:
-                raise ValueError(f"Unsupported operator: {self.operator}")
+                raise UnknownOperatorError(f"Unsupported operator: {self.operator}")
 
     def __str__(self) -> str:
         """Return a string representation of the condition."""
@@ -240,7 +240,18 @@ class ConditionIterable:
 
     def evaluate(self, model: ForgeModel) -> bool:
         """Evaluate the condition on the model."""
-        field_value: list[ForgeModel] = getattr(model, self.field.name)
+        cur_field = self.field
+        names = [cur_field.name]
+        while cur_field.parent:
+            cur_field = cur_field.parent
+            names.append(cur_field.name)
+
+        field_value = model
+        for name in reversed(names):
+            if field_value is None:
+                return False
+            self.condition.field = cur_field
+            field_value = getattr(field_value, name)
 
         if self.strict:
             out = all(self.condition.evaluate(item) for item in field_value)
